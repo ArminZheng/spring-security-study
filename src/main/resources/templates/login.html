@@ -15,8 +15,8 @@
     <div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION}"></div>
 </h2>
 <form method="post" th:action="@{/doLogin}">
-    User: <input name="uname" type="text"><br>
-    Password: <input name="passwd" type="password"><br>
+    <label for="name">User: </label><input id="name" name="uname" type="text"><br>
+    <label for="password">Password: </label><input id="password" name="pwd" type="password"><br>
     <input type="submit" value="log in">
 </form>
 </body>

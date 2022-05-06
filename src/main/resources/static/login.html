@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登陆</title>
+</head>
+<body>
+<h1>User Login</h1>
+<h2>
+    request_raw:
+    <div th:text="${SPRING_SECURITY_LAST_EXCEPTION}"></div>
+    request:
+    <div th:text="${#request.getAttribute('SPRING_SECURITY_LAST_EXCEPTION')}"></div>
+    session:
+    <div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION}"></div>
+</h2>
+<form method="post" th:action="@{/doLogin}">
+    User: <input name="uname" type="text"><br>
+    Password: <input name="passwd" type="password"><br>
+    <input type="submit" value="log in">
+</form>
+</body>
+</html>

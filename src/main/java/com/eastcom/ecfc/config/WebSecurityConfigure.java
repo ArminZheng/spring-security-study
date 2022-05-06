@@ -30,14 +30,14 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .loginPage("/login.html") // 指定登陆页面，一旦定义必须指定登陆api
                 .loginProcessingUrl("/doLogin") // 指定登陆api ，必须同时指定登陆页面
-                .usernameParameter("uname")
-                .passwordParameter("pwd")
+                .usernameParameter("uname") // 修改默认用户名参数
+                .passwordParameter("pwd") // 修改默认密码参数
                 // .successForwardUrl("/hello") // forward 转发，url不变 （只能二选一）
                 // .defaultSuccessUrl("/hello") // redirect 重定向，url改变（只能二选一）
                 // .defaultSuccessUrl("/index", true) // default的特性，如果之前访问受限资源，会优先上一次。需要设为true才能强转
                 .successHandler(new LoginSuccessHandler())
-                // .failureForwardUrl("/login.html")
-                // .failureUrl("/login.html")
+                // .failureForwardUrl("/login.html") // 转发 {request} 作用域中拿
+                // .failureUrl("/login.html") // 重定向（sendRedirect) {session} 作用域中拿
                 .failureHandler(new LoginFailureHandler())
                 .and()
                 .logout()

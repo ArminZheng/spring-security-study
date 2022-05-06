@@ -8,3 +8,4 @@ spring:
       password: root
   thymeleaf:
     cache: false
+#    suffix: .html # 这是默认设置，所以不需要加 ".html"

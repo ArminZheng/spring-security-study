@@ -28,6 +28,7 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
                 .and() // 匿名内部类中使用: 类名.this.属性名,调用外部类属性 e.g.
                 // ExpressionUrlAuthorizationConfigurer.this.and();
                 .formLogin()
+                // 登陆操作 在 formLogin 后面，对登陆进行个性化设置
                 .loginPage("/login.html") // 指定登陆页面，一旦定义必须指定登陆api
                 .loginProcessingUrl("/doLogin") // 指定登陆api ，必须同时指定登陆页面
                 .usernameParameter("uname") // 修改默认用户名参数
@@ -40,6 +41,7 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
                 // .failureUrl("/login.html") // 重定向（sendRedirect) {session} 作用域中拿
                 .failureHandler(new LoginFailureHandler())
                 .and()
+                // 登出操作 在 HttpSecurity 类中, 前面需要加 and()
                 .logout()
                 // .logoutUrl("/logout") // default true
                 .logoutRequestMatcher(new OrRequestMatcher(

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InfoController {
 
     @GetMapping("/info")
-    public String info() {
+    public Object info() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("身份信息：" + authentication.getPrincipal());
         log.info("权限信息：" + authentication.getAuthorities()); // role
@@ -27,7 +27,7 @@ public class InfoController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             log.info("身份信息：" + auth.getPrincipal());
         }, "t1").start();
-        return "身份信息："+ authentication.getPrincipal(); // 主角、当事人
+        return authentication.getPrincipal(); // 主角、当事人
         // （中小学） headmaster; schoolmaster; principal;
         // （大专院校） president; chancellor
     }

@@ -35,7 +35,8 @@ spring:
         min-idle: 0 #最小空闲连接数
         time-between-eviction-runs: 60000 #每ms运行一次空闲连接回收器
 
-hale:
-  enable: true
-  name: zang
-  age: 199
+security:
+  aop:
+    enable: true
+    name: zang
+    age: 19

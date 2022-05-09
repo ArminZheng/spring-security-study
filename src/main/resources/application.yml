@@ -18,3 +18,24 @@ spring:
   mvc:
     format:
       date-time: yyyy-MM-dd HH:mm:ss
+    converters:
+      preferred-json-mapper: gson
+
+  redis: #配置redis
+    host: 10.8.3.112
+    database: 3
+    port: 6379
+    password:
+    timeout: 5000 #连接超时时间
+    jedis:
+      pool:
+        max-active: 8 #最大连接数。 使用负值表示无限制
+        max-wait: -1 #当池耗尽时，在抛出异常之前，连接阻塞的最大时间。 使用负值无限阻塞
+        max-idle: 8 #最大空闲连接数
+        min-idle: 0 #最小空闲连接数
+        time-between-eviction-runs: 60000 #每ms运行一次空闲连接回收器
+
+hale:
+  enable: true
+  name: zang
+  age: 199

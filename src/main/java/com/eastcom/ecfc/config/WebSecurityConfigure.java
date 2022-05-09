@@ -1,10 +1,16 @@
 package com.eastcom.ecfc.config;
 
+import com.eastcom.ecfc.aop.LogAspect;
 import com.eastcom.ecfc.security.LoginFailureHandler;
 import com.eastcom.ecfc.security.LoginSuccessHandler;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
@@ -16,6 +22,19 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
  */
 @Configuration
 public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        String password = passwordEncoder().encode("123456");
+        auth.inMemoryAuthentication().withUser("lucy").password(password).roles("admin")
+        // .and().passwordEncoder(passwordEncoder())
+        ;
+        // auth.userDetailsService(new CachingUserDetailsService()).passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

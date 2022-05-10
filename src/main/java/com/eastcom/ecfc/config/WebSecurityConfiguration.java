@@ -4,11 +4,15 @@ import com.eastcom.ecfc.security.LoginFailureHandler;
 import com.eastcom.ecfc.security.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
@@ -19,14 +23,55 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
  * @version 2022/5/5
  */
 @Configuration
-public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
+        userDetailsManager.createUser(
+                User.withUsername("luck").password("111").roles("admin").build());
+        return userDetailsManager;
+    }
+
+    /**
+     * 替换默认的 AuthenticationManagerBuilder
+     *
+     * <blockquote>
+     *
+     * <pre>
+     * // @Autowired
+     * public void initialize(AuthenticationManagerBuilder builder) throws Exception {
+     *      // security 默认的 Builder
+     * }
+     * </pre>
+     *
+     * </blockquote>
+     *
+     * @param builder AuthenticationManagerBuilder
+     * @throws Exception @exception
+     */
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(AuthenticationManagerBuilder builder) throws Exception {
+        // 自定义 Manager 并没有暴露出去
         String password = passwordEncoder().encode("123456");
-        auth.inMemoryAuthentication().withUser("lucy").password(password).roles("admin")
+        builder.inMemoryAuthentication().withUser("lucy").password(password).roles("admin")
         // .and().passwordEncoder(passwordEncoder())
         ;
-        // auth.userDetailsService(new CachingUserDetailsService()).passwordEncoder(passwordEncoder());
+        // auth.userDetailsService(new
+        // CachingUserDetailsService()).passwordEncoder(passwordEncoder());
+        builder.userDetailsService(userDetailsService());
+    }
+
+    /**
+     * 将 AuthenticationManager 放入容器
+     *
+     * @return AuthenticationManager
+     * @throws Exception @exception
+     */
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
     @Bean
@@ -37,11 +82,15 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .mvcMatchers("/login.html").permitAll()
-                .mvcMatchers("/logout").permitAll()
-                .mvcMatchers("/index").permitAll()
+                .mvcMatchers("/login.html")
+                .permitAll()
+                .mvcMatchers("/logout")
+                .permitAll()
+                .mvcMatchers("/index")
+                .permitAll()
                 // 放行资源要写在【任何】前面
-                .anyRequest().authenticated()
+                .anyRequest()
+                .authenticated()
                 .and() // 匿名内部类中使用: 类名.this.属性名,调用外部类属性 e.g.
                 // ExpressionUrlAuthorizationConfigurer.this.and();
                 .formLogin()
@@ -52,24 +101,29 @@ public class WebSecurityConfigure extends WebSecurityConfigurerAdapter {
                 .passwordParameter("pwd") // 修改默认密码参数
                 // .successForwardUrl("/hello") // forward 转发，url不变 （只能二选一）
                 // .defaultSuccessUrl("/hello") // redirect 重定向，url改变（只能二选一）
+                // default是指如果之前有历史访问，则直接跳转历史，就不去成功页面了
                 // .defaultSuccessUrl("/index", true) // default的特性，如果之前访问受限资源，会优先上一次。需要设为true才能强转
                 .successHandler(new LoginSuccessHandler())
-                // .failureForwardUrl("/login.html") // 转发 {request} 作用域中拿
-                // .failureUrl("/login.html") // 重定向（sendRedirect) {session} 作用域中拿
+                // .failureForwardUrl("/login.html") // 转发
+                // {request} 作用域中拿
+                // .failureUrl("/login.html") // 重定向（sendRedirect)
+                // {session} 作用域中拿
                 .failureHandler(new LoginFailureHandler())
                 .and()
                 // 登出操作 在 HttpSecurity 类中, 前面需要加 and()
                 .logout()
                 // .logoutUrl("/logout") // default true
-                .logoutRequestMatcher(new OrRequestMatcher(
-                        new AntPathRequestMatcher("/aa", "GET"),
-                        new AntPathRequestMatcher("/bb", "POST")
-                ))
+                .logoutRequestMatcher(
+                        new OrRequestMatcher(
+                                new AntPathRequestMatcher("/aa", "GET"),
+                                new AntPathRequestMatcher("/bb", "POST")))
                 .invalidateHttpSession(true) // default true
                 .clearAuthentication(true) // default true
                 .logoutSuccessUrl("/login.html")
 
                 // 以后再说
-                .and().csrf().disable(); // 禁止 csrf 跨站请求保护
+                .and()
+                .csrf()
+                .disable(); // 禁止 csrf 跨站请求保护
     }
 }

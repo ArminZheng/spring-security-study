@@ -1,7 +1,6 @@
 package com.eastcom.ecfc.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * RawController
@@ -12,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class RawController {
 
+    /*
+    使用 WebMvcConfigurer 来替换
+
     @RequestMapping("/logout.html")
     public String logout(){
         return "logout";
@@ -20,5 +22,5 @@ public class RawController {
     @RequestMapping("/login.html")
     public String login(){
         return "login";
-    }
+    }*/
 }

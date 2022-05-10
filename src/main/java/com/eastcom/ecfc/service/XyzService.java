@@ -13,11 +13,16 @@ import java.io.Serializable;
  */
 @Service
 @Data
-public class XyzService implements DService, Serializable {
+public class XyzService implements BService, CService, Serializable {
     String name = "zhangsan";
     Integer age = 18;
 
     public void toBig() {
         System.out.println("name = " + name + " is big boy, age " + age);
+    }
+
+    @Override
+    public String get(String s) {
+        return BService.super.get(s);
     }
 }

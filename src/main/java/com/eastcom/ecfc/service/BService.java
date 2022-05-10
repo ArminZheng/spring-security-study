@@ -1,6 +1,5 @@
 package com.eastcom.ecfc.service;
 
-import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -12,7 +11,10 @@ import java.io.Serializable;
  * @version 2022/5/9
  */
 @Service
-@Data
-public class BService implements Serializable {
+public interface BService extends Serializable {
     String name = "hello wonm";
+
+    default String get(String s) {
+        return "BS";
+    }
 }

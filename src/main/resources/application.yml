@@ -5,10 +5,14 @@ spring:
   security:
     user:
       name: root
-      password: root
+      password: "{noop}root"
   thymeleaf:
     cache: false
-  #    suffix: .html # 这是默认设置，所以不需要加 ".html"
+    # 👇 都是默认配置
+    prefix: classpath:/templates/
+    suffix: .html # 这是默认设置，所以不需要加 ".html"
+    encoding: utf-8
+    mode: HTML
 
   # Content-Type 为 application/json, @JsonFormat(优先级高) 或 spring.jackson.date-format
   jackson:

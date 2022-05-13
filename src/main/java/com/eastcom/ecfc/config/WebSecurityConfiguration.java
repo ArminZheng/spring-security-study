@@ -1,9 +1,14 @@
 package com.eastcom.ecfc.config;
 
 import com.eastcom.ecfc.security.LoginFailureHandler;
+import com.eastcom.ecfc.security.LoginFilter;
 import com.eastcom.ecfc.security.LoginSuccessHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,8 +18,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * WebSecurityConfigure
@@ -115,15 +124,52 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // .logoutUrl("/logout") // default true
                 .logoutRequestMatcher(
                         new OrRequestMatcher(
-                                new AntPathRequestMatcher("/aa", "GET"),
-                                new AntPathRequestMatcher("/bb", "POST")))
+                                new AntPathRequestMatcher("/aa", HttpMethod.GET.name()),
+                                new AntPathRequestMatcher("/bb", HttpMethod.POST.name())))
                 .invalidateHttpSession(true) // default true
                 .clearAuthentication(true) // default true
-                .logoutSuccessUrl("/login.html")
+                // .logoutSuccessUrl("/login.html")
+                .logoutSuccessHandler(
+                        (req, res, auth) -> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("msg", "注销成功");
+                            data.put("用户信息", auth.getPrincipal());
+                            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            res.setStatus(HttpStatus.OK.value());
+                            res.getWriter().println(new ObjectMapper().writeValueAsString(data));
+                        })
+                .and()
+                // 异常处理
+                .exceptionHandling()
+                // 异常处理 -> 认证异常
+                .authenticationEntryPoint(
+                        (req, res, auth) -> {
+                            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            res.getWriter().println("请认证后处理！");
+                        })
+                // 异常处理 -> 授权异常
+                .accessDeniedHandler((req, res, auth) -> {})
 
                 // 以后再说
                 .and()
                 .csrf()
                 .disable(); // 禁止 csrf 跨站请求保护
+        /*
+        at 替换
+        before 之前
+        after 之后
+        */
+        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public LoginFilter loginFilter() throws Exception {
+        LoginFilter loginFilter = new LoginFilter();
+        loginFilter.setUsernameParameter("uname");
+        loginFilter.setPasswordParameter("pwd");
+        // note: builder bind userDetailsService()
+        loginFilter.setAuthenticationManager(authenticationManagerBean());
+        return loginFilter;
     }
 }

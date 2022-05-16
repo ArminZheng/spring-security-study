@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -41,8 +42,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 String username = userInfo.get(getUsernameParameter());
                 String password = userInfo.get(getPasswordParameter());
                 log.info("username = " + username + " | password = " + password);
-
-
+                final UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, password);
+                setDetails(request, authRequest);
+                return this.getAuthenticationManager().authenticate(authRequest);
             } catch (IOException e) {
                 e.printStackTrace();
             }

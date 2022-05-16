@@ -43,8 +43,4 @@ public class KaptchaFilter extends UsernamePasswordAuthenticationFilter {
         }
         throw new KaptchaNoMatchException("验证码不匹配");
     }
-
-    public static void main(String[] args) {
-        System.out.println();
-    }
 }

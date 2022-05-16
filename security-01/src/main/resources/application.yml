@@ -1,0 +1,16 @@
+server:
+  port: 8081
+  servlet:
+    encoding:
+      force-response: true
+
+spring:
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+    converters:
+      preferred-json-mapper: gson

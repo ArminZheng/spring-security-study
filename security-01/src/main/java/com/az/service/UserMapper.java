@@ -4,6 +4,7 @@ package com.az.service;
 import com.az.domain.Role;
 import com.az.domain.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,9 @@ public interface UserMapper {
     Map<String, User> USERS =
             new HashMap<String, User>() {
                 {
-                    put("zhangsan",new User("zhangsan", "{noop}123"));
-                    put("lisi",new User("lisi", "{noop}123"));
-                    put("wangwu",new User("wangwu", "{noop}123"));
+                    put("zhangsan",new User("1","zhangsan", "{noop}123"));
+                    put("lisi",new User("2","lisi", "{noop}123"));
+                    put("wangwu",new User("3","wangwu", "{noop}123"));
                 }
             };
 
@@ -30,7 +31,7 @@ public interface UserMapper {
     }
 
     default List<Role> getRolesById(String id){
-        return null;
+        return new ArrayList<>();
     }
 
     default int updatePassword(String username, String newPassword){

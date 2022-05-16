@@ -1,6 +1,9 @@
 package com.az.config;
 
 import com.az.security.filter.LoginKaptchaFilter;
+import com.az.service.MyUserDetailService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * WebSecurityConfiguration
  *
@@ -21,7 +28,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * @version 2022/5/16
  */
 @Configuration
+@AllArgsConstructor
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    private MyUserDetailService myUserDetailService;
 
     public UserDetailsService userDetailsService() {
         final InMemoryUserDetailsManager inMemoryUserDetailsManager =
@@ -52,7 +62,32 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         // 指定认证管理器
         loginKaptchaFilter.setAuthenticationManager(authenticationManagerBean());
         // 指定成功时处理
+        loginKaptchaFilter.setAuthenticationSuccessHandler(
+                (request, response, authentication) -> {
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setStatus(HttpStatus.OK.value());
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("userInfo", authentication.getPrincipal());
+                    data.put("msg", "登陆成功");
+                    PrintWriter out = response.getWriter();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    out.write(objectMapper.writeValueAsString(data));
+                    out.flush();
+                    out.close();
+                });
         // 指定失败时处理
+        loginKaptchaFilter.setAuthenticationFailureHandler(
+                (request, response, exception) -> {
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("msg", "登陆失败：" + exception.getMessage());
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    PrintWriter out = response.getWriter();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    out.write(objectMapper.writeValueAsString(data));
+                    out.flush();
+                    out.close();
+                });
         return loginKaptchaFilter;
     }
 

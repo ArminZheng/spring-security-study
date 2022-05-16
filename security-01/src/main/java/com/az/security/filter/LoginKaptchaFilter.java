@@ -2,6 +2,7 @@ package com.az.security.filter;
 
 import com.az.security.exception.KaptchaNoMatchException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,11 +21,12 @@ import java.util.Map;
  * @author zy
  * @version 2022/5/16
  */
+@Slf4j
 public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
 
     public static final String SPRING_SECURITY_FORM_KAPTCHA_KEY = "kaptcha";
 
-    private String kaphtchaParameter = SPRING_SECURITY_FORM_KAPTCHA_KEY;
+    private String kaptchaParameter = SPRING_SECURITY_FORM_KAPTCHA_KEY;
 
     @Override
     public Authentication attemptAuthentication(
@@ -34,16 +36,15 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
             throw new AuthenticationServiceException(
                     "Authentication method not supported: " + request.getMethod());
         }
-
         try {
             final Map<String, String> userInfo =
                     new ObjectMapper().readValue(request.getInputStream(), Map.class);
-            final String kaptcha = userInfo.get(getKaphtchaParameter());
+            final String kaptcha = userInfo.get(getKaptchaParameter());
             final String username = userInfo.get(getUsernameParameter());
             final String password = userInfo.get(getPasswordParameter());
 
             final String sessionVerifyCode = (String) request.getSession().getAttribute("kaptcha");
-
+            log.info(sessionVerifyCode, kaptcha);
             if (!ObjectUtils.isEmpty(sessionVerifyCode)
                     && !ObjectUtils.isEmpty(kaptcha)
                     && kaptcha.equalsIgnoreCase(sessionVerifyCode)) {
@@ -64,15 +65,11 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
         super.setPasswordParameter(passwordParameter);
     }
 
-    public void setKaptchaParameter(String passwordParameter) {
-        super.setPasswordParameter(passwordParameter);
+    public String getKaptchaParameter() {
+        return kaptchaParameter;
     }
 
-    public String getKaphtchaParameter() {
-        return kaphtchaParameter;
-    }
-
-    public void setKaphtchaParameter(String kaphtchaParameter) {
-        this.kaphtchaParameter = kaphtchaParameter;
+    public void setKaptchaParameter(String kaptchaParameter) {
+        this.kaptchaParameter = kaptchaParameter;
     }
 }

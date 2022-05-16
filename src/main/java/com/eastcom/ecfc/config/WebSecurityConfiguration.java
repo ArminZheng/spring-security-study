@@ -1,5 +1,6 @@
 package com.eastcom.ecfc.config;
 
+import com.eastcom.ecfc.security.KaptchaFilter;
 import com.eastcom.ecfc.security.LoginFailureHandler;
 import com.eastcom.ecfc.security.LoginFilter;
 import com.eastcom.ecfc.security.LoginSuccessHandler;
@@ -93,6 +94,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .mvcMatchers("/login.html")
                 .permitAll()
+                .mvcMatchers("/vc.png")
+                .permitAll()
                 .mvcMatchers("/logout")
                 .permitAll()
                 .mvcMatchers("/index")
@@ -160,7 +163,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         before 之前
         after 之后
         */
-        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
@@ -171,5 +175,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         // note: builder bind userDetailsService()
         loginFilter.setAuthenticationManager(authenticationManagerBean());
         return loginFilter;
+    }
+
+    @Bean
+    public KaptchaFilter kaptchaFilter() throws Exception {
+        KaptchaFilter kaptchaFilter = new KaptchaFilter();
+        kaptchaFilter.setAuthenticationManager(authenticationManagerBean());
+        return kaptchaFilter;
     }
 }

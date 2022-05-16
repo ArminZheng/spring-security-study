@@ -17,6 +17,7 @@
 <form method="post" th:action="@{/doLogin}">
     <label for="name">User: </label><input id="name" name="uname" type="text"><br>
     <label for="password">Password: </label><input id="password" name="pwd" type="password"><br>
+    <label for="kaptcha">Password: </label><input id="kaptcha" name="kaptcha" type="text"><img src="" th:src="@{/vc.png}" alt=""><br>
     <input type="submit" value="log in">
 </form>
 </body>

@@ -21,6 +21,7 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+
   # Content-Type 为 application/x-www-form-urlencoded（普通表单上传）spring.mvc.format.date-time(优先级高) 或 @DatetimeFormat
   mvc:
     format:

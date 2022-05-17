@@ -2,7 +2,6 @@ package com.az.resource;
 
 import com.google.code.kaptcha.Producer;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * InfoController
+ * 简单两个接口，实现验证码返回和认证判断
  *
  * @author zy
  * @version 2022/5/16

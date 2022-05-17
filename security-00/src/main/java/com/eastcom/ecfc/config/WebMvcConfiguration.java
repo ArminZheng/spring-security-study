@@ -12,6 +12,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class WebMvcConfiguration implements WebMvcConfigurer {
+    /**
+     * 为了搭配 thymeleaf 使用
+     * @param registry 视图自动化注册器
+     */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("login.html").setViewName("login");

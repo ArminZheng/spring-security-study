@@ -10,7 +10,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * User
+ * 继承 UserDetails 1. 注意四个is 得返回true。
+ * 2. uname pwd 得返回对应值，而不是null
+ * 3. getAuthorities 得根据角色构建 SimpleGrantedAuthority(只包装了一层String的废物)
  *
  * @author zy
  * @version 2022/5/16
@@ -50,7 +52,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
+            authorities.add(new SimpleGrantedAuthority(role.getCode()));
         }
         return authorities;
     }

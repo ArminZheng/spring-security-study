@@ -32,11 +32,11 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(
             HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
-        if (!request.getMethod().equals("POST")) {
+        if (!request.getMethod().equals("POST")) { // 模仿 UsernamePasswordAuthenticationFilter
             throw new AuthenticationServiceException(
                     "Authentication method not supported: " + request.getMethod());
         }
-        try {
+        try { // 开始获取参数, 进行校验, 通过后放行到下一个 Filter中
             final Map<String, String> userInfo =
                     new ObjectMapper().readValue(request.getInputStream(), Map.class);
             final String kaptcha = userInfo.get(getKaptchaParameter());
@@ -44,12 +44,13 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
             final String password = userInfo.get(getPasswordParameter());
 
             final String sessionVerifyCode = (String) request.getSession().getAttribute("kaptcha");
-            log.info(sessionVerifyCode, kaptcha);
-            if (!ObjectUtils.isEmpty(sessionVerifyCode)
+            log.info(sessionVerifyCode + " versus " + kaptcha);
+            if (!ObjectUtils.isEmpty(sessionVerifyCode) // 验证码是否输入, 是否存在, 是否相等 (否则下一步抛异常)
                     && !ObjectUtils.isEmpty(kaptcha)
                     && kaptcha.equalsIgnoreCase(sessionVerifyCode)) {
                 final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(username, password);
+                // 将request请求信息也放置在Token里面 (IP，session 或 角色信息)
                 setDetails(request, usernamePasswordAuthenticationToken);
                 return this.getAuthenticationManager()
                         .authenticate(usernamePasswordAuthenticationToken);

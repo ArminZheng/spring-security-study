@@ -30,14 +30,35 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private MyUserDetailService myUserDetailService;
 
-    // public UserDetailsService userDetailsService() {
-    //     final InMemoryUserDetailsManager inMemoryUserDetailsManager =
-    //             new InMemoryUserDetailsManager();
-    //     inMemoryUserDetailsManager.createUser(
-    //             User.withUsername("root").password("{noop}123").roles("admin").build());
-    //     return inMemoryUserDetailsManager;
-    // }
-
+    /**
+     * 在这里注册 userDetailService 以替换下面两种方式：
+     *
+     * <p>
+     *
+     * <pre>
+     *     builder.inMemoryAuthentication()
+     *         .withUser("lucy").password(password).roles("admin")
+     * </pre>
+     *
+     * 或
+     *
+     * <pre>
+     *     ...
+     *         auth.userDetailsService(userDetailsService());
+     *     }
+     *     ...
+     *     public UserDetailsService userDetailsService() {
+     *         final InMemoryUserDetailsManager inMemory =
+     *                 new InMemoryUserDetailsManager();
+     *         inMemory.createUser(User.withUsername("root")
+     *                 .password("{noop}123").roles("admin").build());
+     *         return inMemory;
+     *     }
+     * </pre>
+     *
+     * @param auth the {@link AuthenticationManagerBuilder} to use
+     * @throws Exception exception
+     */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(myUserDetailService);

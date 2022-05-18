@@ -1,4 +1,4 @@
-package com.az.domain;
+package com.eastcom.ecfc.domain;
 
 import lombok.Data;
 

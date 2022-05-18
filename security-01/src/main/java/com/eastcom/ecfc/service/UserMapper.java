@@ -1,7 +1,8 @@
-package com.az.service;
+package com.eastcom.ecfc.service;
 
-import com.az.domain.Role;
-import com.az.domain.User;
+
+import com.eastcom.ecfc.domain.Role;
+import com.eastcom.ecfc.domain.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.az.service;
+package com.eastcom.ecfc.service;
 
 import org.springframework.stereotype.Service;
 

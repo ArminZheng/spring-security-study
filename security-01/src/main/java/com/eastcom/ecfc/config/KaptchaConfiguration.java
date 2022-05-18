@@ -1,4 +1,4 @@
-package com.az.config;
+package com.eastcom.ecfc.config;
 
 import com.google.code.kaptcha.Producer;
 import com.google.code.kaptcha.impl.DefaultKaptcha;

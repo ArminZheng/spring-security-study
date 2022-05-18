@@ -1,6 +1,6 @@
-package com.az.security.filter;
+package com.eastcom.ecfc.security.filter;
 
-import com.az.security.exception.KaptchaNoMatchException;
+import com.eastcom.ecfc.security.exception.KaptchaNoMatchException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;

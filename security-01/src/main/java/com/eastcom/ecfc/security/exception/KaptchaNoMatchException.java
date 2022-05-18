@@ -1,4 +1,4 @@
-package com.az.security.exception;
+package com.eastcom.ecfc.security.exception;
 
 import org.springframework.security.core.AuthenticationException;
 

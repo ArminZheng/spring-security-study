@@ -1,4 +1,4 @@
-package com.az.resource;
+package com.eastcom.ecfc.resource;
 
 import com.google.code.kaptcha.Producer;
 import lombok.AllArgsConstructor;

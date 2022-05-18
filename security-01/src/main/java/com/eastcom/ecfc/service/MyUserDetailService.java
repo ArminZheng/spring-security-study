@@ -1,6 +1,6 @@
-package com.az.service;
+package com.eastcom.ecfc.service;
 
-import com.az.domain.User;
+import com.eastcom.ecfc.domain.User;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;

@@ -1,7 +1,7 @@
-package com.az.config;
+package com.eastcom.ecfc.config;
 
-import com.az.security.filter.LoginKaptchaFilter;
-import com.az.service.MyUserDetailService;
+import com.eastcom.ecfc.security.filter.LoginKaptchaFilter;
+import com.eastcom.ecfc.service.MyUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;

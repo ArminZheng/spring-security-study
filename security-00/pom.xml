@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.example</groupId>
-            <artifactId>SecurityAOP</artifactId>
+            <artifactId>security-aop</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

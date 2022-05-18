@@ -11,14 +11,17 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
@@ -172,7 +175,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
         // begin 未知知识
-        /*http.sessionManagement().invalidSessionUrl("/sessionInvalid");
+        http.sessionManagement().invalidSessionUrl("/sessionInvalid");
         http.sessionManagement().maximumSessions(1);
         http.authorizeRequests().withObjectPostProcessor(
                 new ObjectPostProcessor<FilterSecurityInterceptor>() {
@@ -183,11 +186,11 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                         // object.setAccessDecisionManager(urlAccessDecisionManager);
                         return object;
                     }
-                });*/
+                });
     }
 
-    /*@Override
-    public void configure(WebSecurity web) throws Exception {
+    @Override
+    public void configure(WebSecurity web) {
         web.ignoring()
                 // 主页 静态资源白名单
                 .antMatchers("/index.html").antMatchers("/user/isUserLoggedIn").antMatchers("/user/getCurrentUserInfo")
@@ -201,7 +204,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/termReq/**")
                 .antMatchers("/code/image")
                 .antMatchers("/test/**");
-    }*/
+    }
     // end 未知知识
     @Bean
     public LoginFilter loginFilter() throws Exception {

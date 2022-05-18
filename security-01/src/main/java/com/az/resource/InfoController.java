@@ -3,6 +3,8 @@ package com.az.resource;
 import com.google.code.kaptcha.Producer;
 import lombok.AllArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,11 @@ public class InfoController {
     @GetMapping
     public String getInfo() {
         return "hello security";
+    }
+
+    @GetMapping("/user")
+    public Authentication getUser() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
     @GetMapping("/vc.png")

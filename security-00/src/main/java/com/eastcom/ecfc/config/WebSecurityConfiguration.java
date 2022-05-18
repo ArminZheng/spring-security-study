@@ -23,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -152,7 +153,12 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                             res.getWriter().println("请认证后处理！");
                         })
                 // 异常处理 -> 授权异常
-                .accessDeniedHandler((req, res, auth) -> {})
+                .accessDeniedHandler(
+                        (req, res, auth) -> {
+                            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            res.getWriter().println("权限不足，请联系管理员!");
+                        })
 
                 // 以后再说
                 .and()
@@ -165,8 +171,38 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         */
         http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        // begin 未知知识
+        /*http.sessionManagement().invalidSessionUrl("/sessionInvalid");
+        http.sessionManagement().maximumSessions(1);
+        http.authorizeRequests().withObjectPostProcessor(
+                new ObjectPostProcessor<FilterSecurityInterceptor>() {
+                    @Override
+                    public <O extends FilterSecurityInterceptor> O postProcess(O object) {
+                        // object.setSecurityMetadataSource(
+                        //         urlFilterInvocationSecurityMetadataSource);
+                        // object.setAccessDecisionManager(urlAccessDecisionManager);
+                        return object;
+                    }
+                });*/
     }
 
+    /*@Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring()
+                // 主页 静态资源白名单
+                .antMatchers("/index.html").antMatchers("/user/isUserLoggedIn").antMatchers("/user/getCurrentUserInfo")
+                .antMatchers("/notFound").antMatchers("/error").antMatchers("/static/**")
+                .antMatchers("/user/distroySession")//登出
+                .antMatchers("/sessionInvalid")//sesseion过期
+                // swagger 接口白名单
+                .antMatchers("/swagger-ui.html/**").antMatchers("/webjars/**").antMatchers("/v2/**")
+                .antMatchers("/swagger-resources/**").antMatchers("/pushWebsocket/**")
+                .antMatchers("/agent/**")
+                .antMatchers("/termReq/**")
+                .antMatchers("/code/image")
+                .antMatchers("/test/**");
+    }*/
+    // end 未知知识
     @Bean
     public LoginFilter loginFilter() throws Exception {
         LoginFilter loginFilter = new LoginFilter();

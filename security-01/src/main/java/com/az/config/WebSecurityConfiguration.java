@@ -47,6 +47,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
      *         auth.userDetailsService(userDetailsService());
      *     }
      *     ...
+     *     &#064;Autowired
      *     public UserDetailsService userDetailsService() {
      *         final InMemoryUserDetailsManager inMemory =
      *                 new InMemoryUserDetailsManager();
@@ -119,6 +120,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
+                .and()
+                .rememberMe() // 开启 RememberMe 功能
+                // .alwaysRemember(true) // 总是使用 RememberMe 功能
+                // .rememberMeParameter("rememberMe") // 更改默认接收参数
                 .and()
                 .logout()
                 // .and()

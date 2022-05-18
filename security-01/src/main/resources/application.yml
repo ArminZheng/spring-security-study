@@ -3,6 +3,9 @@ server:
   servlet:
     encoding:
       force-response: true
+    session:
+      # persistent: true # 是否在重启之间保存session
+      timeout: 1m
 
 spring:
   jackson:

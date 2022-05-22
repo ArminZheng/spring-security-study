@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         loginKaptchaFilter.setUsernameParameter("uname");
         loginKaptchaFilter.setPasswordParameter("passwd");
         loginKaptchaFilter.setKaptchaParameter("kaptcha");
+        loginKaptchaFilter.setRememberMeServices(
+                rememberMeServices()); // 8 前后端分离后，更改了获取方式后，存放也需要同步设置(2/2)
         // 指定认证管理器
         loginKaptchaFilter.setAuthenticationManager(authenticationManagerBean());
         // 指定成功时处理
@@ -130,7 +133,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .and()
                 .rememberMe() // 1 开启 RememberMe 功能
-                .rememberMeServices(rememberMeServices())
+                .rememberMeServices(rememberMeServices()) // 8 前后端分离后，更改了获取方式后，存放也需要同步设置(1/2)
                 // .tokenRepository(persistentTokenRepository()) // 7 使用数据库 RememberMe (方式二)
                 // .alwaysRemember(true) // 3 总是使用 RememberMe 功能
                 // .rememberMeParameter("rememberMe") // 2 更改默认接收参数
@@ -165,7 +168,21 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         InMemoryTokenRepositoryImpl inMemoryTokenRepository = new InMemoryTokenRepositoryImpl();
         // 5 使用这种方式，在 session 过期后，就会使用 cookie:rememberMe, 任意一次使用都会对 值进行更新
         return new PersistentTokenBasedRememberMeServices(
-                UUID.randomUUID().toString(), myUserDetailService, inMemoryTokenRepository);
+                UUID.randomUUID().toString(), myUserDetailService, inMemoryTokenRepository) {
+            /** 8 前后端分离后 需要重写获取 remember-me 开启条件值的方式，比如 json 形式就必须从请求体里面获取 */
+            @Override
+            protected boolean rememberMeRequested(HttpServletRequest request, String parameter) {
+                String paramValue = request.getParameter(parameter);
+                if (paramValue != null
+                        && (paramValue.equalsIgnoreCase("true")
+                                || paramValue.equalsIgnoreCase("on")
+                                || paramValue.equalsIgnoreCase("yes")
+                                || paramValue.equals("1"))) {
+                    return true;
+                }
+                return false;
+            }
+        };
     }
 
     // 7 使用数据库 RememberMe (方式二)

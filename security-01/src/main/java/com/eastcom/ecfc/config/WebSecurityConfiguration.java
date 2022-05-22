@@ -1,9 +1,12 @@
 package com.eastcom.ecfc.config;
 
 import com.eastcom.ecfc.security.filter.LoginKaptchaFilter;
+import com.eastcom.ecfc.service.LabelFilter;
 import com.eastcom.ecfc.service.MyUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.RegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -12,11 +15,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * WebSecurityConfiguration
@@ -113,17 +120,20 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // authorizeRequests formLogin logout csrf
-        http.authorizeHttpRequests()
+        http.authorizeRequests() // 5 authorizeHttpRequests 没有办法使用 mvcMatchers.rememberMe
                 .mvcMatchers("/v1/info/vc.png")
                 .permitAll()
+                // .mvcMatchers("/index.html").rememberMe() // 6 指定资源使用 rememberMe
                 .anyRequest()
                 .authenticated()
                 .and()
                 .formLogin()
                 .and()
-                .rememberMe() // 开启 RememberMe 功能
-                // .alwaysRemember(true) // 总是使用 RememberMe 功能
-                // .rememberMeParameter("rememberMe") // 更改默认接收参数
+                .rememberMe() // 1 开启 RememberMe 功能
+                .rememberMeServices(rememberMeServices())
+                // .tokenRepository(persistentTokenRepository()) // 7 使用数据库 RememberMe (方式二)
+                // .alwaysRemember(true) // 3 总是使用 RememberMe 功能
+                // .rememberMeParameter("rememberMe") // 2 更改默认接收参数
                 .and()
                 .logout()
                 // .and()
@@ -138,5 +148,41 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .disable();
         http.addFilterAt(loginKaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(labelFilter, UsernamePasswordAuthenticationFilter.class);
+        // http.addFilterBefore(testFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    // private DataSource dataSource;
+
+    /* 4 remember me service */
+    @Bean
+    public RememberMeServices rememberMeServices() {
+        // 7 使用数据库 (方式一)
+        // JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        // jdbcTokenRepository.setDataSource(dataSource);
+        // 得自己创建表
+
+        InMemoryTokenRepositoryImpl inMemoryTokenRepository = new InMemoryTokenRepositoryImpl();
+        // 5 使用这种方式，在 session 过期后，就会使用 cookie:rememberMe, 任意一次使用都会对 值进行更新
+        return new PersistentTokenBasedRememberMeServices(
+                UUID.randomUUID().toString(), myUserDetailService, inMemoryTokenRepository);
+    }
+
+    // 7 使用数据库 RememberMe (方式二)
+    // @Bean
+    // public PersistentTokenRepository persistentTokenRepository() {
+    //     JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+    //     jdbcTokenRepository.setDataSource(dataSource); // 得引入 jdbc
+    //     jdbcTokenRepository.setCreateTableOnStartup(true); // 启动时创建表结构
+    //     return jdbcTokenRepository;
+    // }
+
+    private LabelFilter labelFilter;
+
+    @Bean
+    public RegistrationBean ssoFilter(LabelFilter filter) {
+        FilterRegistrationBean<LabelFilter> registrationBean = new FilterRegistrationBean<>(filter);
+        registrationBean.setEnabled(false);
+        return registrationBean;
     }
 }

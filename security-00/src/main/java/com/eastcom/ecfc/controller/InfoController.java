@@ -1,6 +1,5 @@
 package com.eastcom.ecfc.controller;
 
-import com.eastcom.ecfc.aop.AspectEnable;
 import com.eastcom.ecfc.service.AService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,6 @@ public class InfoController {
 
     @Resource(name = "redisTemplate")
     ValueOperations<String, AService> AOps;
-
-    @Autowired AspectEnable aspectEnable;
 
     @GetMapping("/info")
     public Object info() {
@@ -73,7 +70,6 @@ public class InfoController {
     public String redis(@PathVariable("key") String key) {
         String result = valueOps.get(key);
         log.info(result);
-        System.out.println("aspectEnable.toString() = " + aspectEnable.toString());
         return result;
     }
 

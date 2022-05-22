@@ -17,3 +17,7 @@ spring:
       date-time: yyyy-MM-dd HH:mm:ss
     converters:
       preferred-json-mapper: gson
+#  main:
+#    allow-circular-references: true
+
+#debug: true

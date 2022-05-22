@@ -17,6 +17,9 @@ spring:
       date-time: yyyy-MM-dd HH:mm:ss
     converters:
       preferred-json-mapper: gson
+#  web:
+#    resources:
+#      static-locations:
 #  main:
 #    allow-circular-references: true
 

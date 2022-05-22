@@ -15,12 +15,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -153,6 +157,24 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.addFilterAt(loginKaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAfter(labelFilter, UsernamePasswordAuthenticationFilter.class);
         // http.addFilterBefore(testFilter, UsernamePasswordAuthenticationFilter.class);
+        // session 会话管理
+        http.sessionManagement() // 开启会话管理
+                .maximumSessions(1) // 最大同时登陆数
+                // .and().invalidSessionUrl("invalidSession") // 错误session处理
+                // 属于SessionManagementFilter重定向
+                // .expiredUrl("/expired") // 被挤下线的会话过期处理 属于ConcurrentSessionFilter将重定向到expiredUrl
+                .expiredSessionStrategy( // 过期策略（前后端分离）
+                        event -> {
+                            HttpServletResponse response = event.getResponse();
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            String json =
+                                    "{\"success\":false,\"message\":\"SESSION_INVALID\",\"code\":401}";
+                            response.getWriter().println(json);
+                        })
+                .maxSessionsPreventsLogin(true) // 登陆后禁止再次登陆(不允许二次登陆)
+                // session 共享
+                .sessionRegistry(sessionRegistry())
+        ;
     }
 
     // private DataSource dataSource;
@@ -194,7 +216,22 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     //     return jdbcTokenRepository;
     // }
 
-    private LabelFilter labelFilter;
+    private final LabelFilter labelFilter;
+
+    private final FindByIndexNameSessionRepository sessionRepository;
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SpringSessionBackedSessionRegistry(sessionRepository);
+    }
+
+    /*
+    旧版本使用 session 监听器的 maximumSessions 必须添加 HttpSessionEventPublisher
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+    */
 
     @Bean
     public RegistrationBean ssoFilter(LabelFilter filter) {

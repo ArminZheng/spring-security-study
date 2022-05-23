@@ -1,10 +1,6 @@
 package com.eastcom.ecfc.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * WithdrawController
@@ -14,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/withdraw")
+// @CrossOrigin 整个类都适用跨域
 public class WithdrawController {
 
     @GetMapping
@@ -21,9 +18,10 @@ public class WithdrawController {
         return "Withdraw Success";
     }
 
+    @CrossOrigin
     @GetMapping("/info")
-    public String withdrawInfo() {
-        return "Withdraw Info";
+    public String withdrawInfo(@CookieValue("XSRF-TOKEN") String token) {
+        return "Withdraw Info " + token;
     }
 
     @PostMapping("/post")

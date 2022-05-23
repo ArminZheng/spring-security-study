@@ -1,5 +1,8 @@
 server:
   port: 8080
+  servlet:
+    encoding:
+      force-response: true
 
 spring:
   redis:
@@ -9,3 +12,14 @@ spring:
     user:
       name: root
       password: 1234
+  thymeleaf:
+    suffix: .html
+    cache: false
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+    converters:
+      preferred-json-mapper: gson
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8

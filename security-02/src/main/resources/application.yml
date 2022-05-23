@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+spring:
+  redis:
+    host: 10.8.206.107
+    password: 123456
+  security:
+    user:
+      name: root
+      password: 1234

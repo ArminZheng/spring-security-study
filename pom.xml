@@ -11,6 +11,7 @@
     <modules>
         <module>security-01</module>
         <module>security-00</module>
+        <module>security-02</module>
     </modules>
 
     <properties>

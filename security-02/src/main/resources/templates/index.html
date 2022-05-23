@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index page</title>
+</head>
+<body>
+
+<h1>home page!</h1>
+
+<form method="post" th:action="@{/withdraw/post}">
+    <label for="name">User: </label><input id="name" name="name" type="text"><br>
+    <label for="password">Password: </label><input id="password" name="pwd" type="password"><br>
+<!--    <label for="kaptcha">Password: </label><input id="kaptcha" name="kaptcha" type="text"><img src="" th:src="@{/vc.png}" alt=""><br>-->
+    <input type="submit" value="log in">
+</form>
+</body>
+</html>

@@ -174,9 +174,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         */
         http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
-        // begin 未知知识
-        http.sessionManagement().invalidSessionUrl("/sessionInvalid");
+        http.sessionManagement().invalidSessionUrl("/sessionInvalid"); // session 非法处理url（全局处理，且自动放开访问）
         http.sessionManagement().maximumSessions(1);
+        // begin 未知知识
         http.authorizeRequests().withObjectPostProcessor(
                 new ObjectPostProcessor<FilterSecurityInterceptor>() {
                     @Override
@@ -189,6 +189,21 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 });
     }
 
+    /**
+     * WebSecurity 用于配置全局的某些通用事物，例如静态资源等
+     *
+     * <p>放行所有免认证就可以访问的路径，比如注册业务，登录业务，退出业务，静态资源等
+     *
+     * <p>HttpSecurity 可以同时配置角色, 当使用 permitAll() 时。请求将被允许从 Security Filter Chain 访问, 这是昂贵的
+     *
+     * <p>authorizeRequests().antMatchers("/admin/**").hasRole("ADMIN").anyRequest().authenticated();
+     *
+     * <p>WebSecurity 方便放行, 适合不需要任何 身份验证/授权 即可查看或读取的图像、javascript 文件
+     *
+     * <p>ignoring().antMatchers("/admin/**", "/public/**"); // 这时上面的 /admin 也会失效
+     *
+     * @param web WebSecurity
+     */
     @Override
     public void configure(WebSecurity web) {
         web.ignoring()

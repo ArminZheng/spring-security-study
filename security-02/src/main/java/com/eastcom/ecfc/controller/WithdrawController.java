@@ -1,6 +1,8 @@
 package com.eastcom.ecfc.controller;
 
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * WithdrawController
@@ -24,8 +26,9 @@ public class WithdrawController {
         return "Withdraw Info " + token;
     }
 
-    @PostMapping("/post")
-    public String withdrawPost(@RequestParam("name") String  name) {
+    @PostMapping(value = "/post")
+    public String withdrawPost(@RequestParam("name") String  name, BindException exception, WebRequest quest) {
+        // quest.get
         return "Withdraw Info " + name;
     }
 }

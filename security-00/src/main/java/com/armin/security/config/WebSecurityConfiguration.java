@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.annotation.SecurityBuilder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -21,13 +22,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.debug.DebugFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.util.Assert;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -174,19 +184,21 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         */
         http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.sessionManagement().invalidSessionUrl("/sessionInvalid"); // session 非法处理url（全局处理，且自动放开访问）
+        http.sessionManagement()
+                .invalidSessionUrl("/sessionInvalid"); // session 非法处理url（全局处理，且自动放开访问）
         http.sessionManagement().maximumSessions(1);
         // begin 未知知识
-        http.authorizeRequests().withObjectPostProcessor(
-                new ObjectPostProcessor<FilterSecurityInterceptor>() {
-                    @Override
-                    public <O extends FilterSecurityInterceptor> O postProcess(O object) {
-                        // object.setSecurityMetadataSource(
-                        //         urlFilterInvocationSecurityMetadataSource);
-                        // object.setAccessDecisionManager(urlAccessDecisionManager);
-                        return object;
-                    }
-                });
+        http.authorizeRequests()
+                .withObjectPostProcessor(
+                        new ObjectPostProcessor<FilterSecurityInterceptor>() {
+                            @Override
+                            public <O extends FilterSecurityInterceptor> O postProcess(O object) {
+                                // object.setSecurityMetadataSource(
+                                //         urlFilterInvocationSecurityMetadataSource);
+                                // object.setAccessDecisionManager(urlAccessDecisionManager);
+                                return object;
+                            }
+                        });
     }
 
     /**
@@ -208,19 +220,100 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring()
                 // 主页 静态资源白名单
-                .antMatchers("/index.html").antMatchers("/user/isUserLoggedIn").antMatchers("/user/getCurrentUserInfo")
-                .antMatchers("/notFound").antMatchers("/error").antMatchers("/static/**")
-                .antMatchers("/user/distroySession")//登出
-                .antMatchers("/sessionInvalid")//sesseion过期
+                .antMatchers("/index.html")
+                .antMatchers("/user/isUserLoggedIn")
+                .antMatchers("/user/getCurrentUserInfo")
+                .antMatchers("/notFound")
+                .antMatchers("/error")
+                .antMatchers("/static/**")
+                .antMatchers("/user/distroySession") // 登出
+                .antMatchers("/sessionInvalid") // sesseion过期
                 // swagger 接口白名单
-                .antMatchers("/swagger-ui.html/**").antMatchers("/webjars/**").antMatchers("/v2/**")
-                .antMatchers("/swagger-resources/**").antMatchers("/pushWebsocket/**")
+                .antMatchers("/swagger-ui.html/**")
+                .antMatchers("/webjars/**")
+                .antMatchers("/v2/**")
+                .antMatchers("/swagger-resources/**")
+                .antMatchers("/pushWebsocket/**")
                 .antMatchers("/agent/**")
                 .antMatchers("/termReq/**")
                 .antMatchers("/code/image")
                 .antMatchers("/test/**");
     }
-    // end 未知知识
+
+    /**
+     * In order to finely manage the life cycle of multiple SecurityFilterChain, it is necessary to
+     * have a unified management agent for these SecurityFilterChain, which is the meaning of
+     * WebSecurity. Here is the underlying logic of the build method of WebSecurity.
+     *
+     * <p>为了精细地管理多个生命周期SecurityFilterChain，就需要对这些有一个统一的管理代理SecurityFilterChain，这就是WebSecurity.
+     * 这里是build方法的底层逻辑WebSecurity。
+     *
+     * <p>As you can see from the source code above, WebSecurity is used to build a Spring bean
+     * FilterChainProxy called springSecurityFilterChain. Its role is to define those requests that
+     * ignore security controls and those that must, clearing SecurityContext when appropriate to
+     * avoid memory leaks, and also to define request firewalls and request rejection processors,
+     * plus we turn on Spring Security Debug mode which is also configured here.
+     *
+     * <p>我们事实上可以认为，WebSecurity是Spring Security对外的唯一出口，而HttpSecurity只是内部安全策略的定义方式；
+     * WebSecurity对标FilterChainProxy，而HttpSecurity则对标SecurityFilterChain，另外它们的父类都是AbstractConfiguredSecurityBuilder。
+     *
+     * @return
+     * @throws Exception
+     */
+    protected Filter performBuild() throws Exception {
+        Assert.state(
+                !this.securityFilterChainBuilders.isEmpty(),
+                () ->
+                        "At least one SecurityBuilder<? extends SecurityFilterChain> needs to be specified. "
+                                + "Typically this is done by exposing a SecurityFilterChain bean "
+                                + "or by adding a @Configuration that extends WebSecurityConfigurerAdapter. "
+                                + "More advanced users can invoke "
+                                + WebSecurity.class.getSimpleName()
+                                + ".addSecurityFilterChainBuilder directly");
+        // 被忽略请求的个数 和 httpscurity的个数 构成了过滤器链集合的大小
+        int chainSize = this.ignoredRequests.size() + this.securityFilterChainBuilders.size();
+        List<SecurityFilterChain> securityFilterChains = new ArrayList<>(chainSize);
+        // 初始化过滤器链集合中的 忽略请求过滤器链
+        for (RequestMatcher ignoredRequest : this.ignoredRequests) {
+            securityFilterChains.add(new DefaultSecurityFilterChain(ignoredRequest));
+        }
+        // 初始化过滤器链集合中的 httpsecurity 定义的过滤器链
+        for (SecurityBuilder<? extends SecurityFilterChain> securityFilterChainBuilder :
+                this.securityFilterChainBuilders) {
+            securityFilterChains.add(securityFilterChainBuilder.build());
+        }
+        FilterChainProxy filterChainProxy = new FilterChainProxy(securityFilterChains);
+        if (this.httpFirewall != null) {
+            // 请求防火墙
+            filterChainProxy.setFirewall(this.httpFirewall);
+        }
+        if (this.requestRejectedHandler != null) {
+            // 请求拒绝处理器
+            filterChainProxy.setRequestRejectedHandler(this.requestRejectedHandler);
+        }
+        filterChainProxy.afterPropertiesSet();
+
+        Filter result = filterChainProxy;
+        if (this.debugEnabled) {
+            this.logger.warn(
+                    "\n\n"
+                            + "********************************************************************\n"
+                            + "**********        Security debugging is enabled.       *************\n"
+                            + "**********    This may include sensitive information.  *************\n"
+                            + "**********      Do not use in a production system!     *************\n"
+                            + "********************************************************************\n\n");
+            result = new DebugFilter(filterChainProxy);
+        }
+        this.postBuildAction.run();
+        return result;
+    }
+    /**
+     * There is also a role that may not be mentioned in other articles, FilterChainProxy is the
+     * only export of Spring Security to the Spring framework application, which is then combined
+     * with a Servlet in Spring’s bridge proxy DelegatingFilterProxy. which constitutes Spring’s
+     * only export to the Servlet system. This isolates Spring Security, Spring framework and
+     * Servlet API. end
+     */
     @Bean
     public LoginFilter loginFilter() throws Exception {
         LoginFilter loginFilter = new LoginFilter();

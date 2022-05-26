@@ -50,7 +50,11 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
                     && kaptcha.equalsIgnoreCase(sessionVerifyCode)) {
                 final UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(username, password);
-                // 将request请求信息也放置在Token里面 (IP，session 或 角色信息)
+                /*
+                 将request请求信息也放置在Token里面 (IP，session 或 角色信息), 等同于
+                   usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                 在编写自己的filter时，记得 setDetails(..) 尤其是继承 OncePerRequestFilter
+                 */
                 setDetails(request, usernamePasswordAuthenticationToken);
                 return this.getAuthenticationManager()
                         .authenticate(usernamePasswordAuthenticationToken);

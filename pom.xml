@@ -12,6 +12,7 @@
         <module>security-01</module>
         <module>security-00</module>
         <module>security-02</module>
+        <module>security-v54</module>
     </modules>
 
     <properties>

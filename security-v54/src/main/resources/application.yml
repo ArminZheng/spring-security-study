@@ -1,0 +1,18 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      force-response: true
+
+spring:
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+    converters:
+      preferred-json-mapper: gson
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  redis:
+    host: 10.8.206.107
+    password: 123456

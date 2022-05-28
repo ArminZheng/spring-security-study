@@ -17,7 +17,7 @@ public class CaptchaAuthenticationFilter extends AbstractAuthenticationProcessin
     public static final String SPRING_SECURITY_FORM_CAPTCHA_KEY = "captcha";
 
     public CaptchaAuthenticationFilter() {
-        super(new AntPathRequestMatcher("/clogin", "POST"));
+        super(new AntPathRequestMatcher("/captchaLogin", "POST"));
     }
 
     public Authentication attemptAuthentication(

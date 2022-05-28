@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
@@ -27,10 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * https://felord.cn/captchaAuthenticationFilter.html
+ * Security 配置类
  *
- * <p>https://felord.cn/authenticationConfiguration.html
- *
+ * @see <a href="https://felord.cn/captchaAuthenticationFilter.html">验证码登录</a>
+ * @see <a href="https://felord.cn/authenticationConfiguration.html">其它登录不兼容，出现No Provider异常</a>
  * @author zy
  * @version 2022/5/26
  */
@@ -47,12 +48,12 @@ public class SecurityConfiguration {
                 .authorizeRequests(
                         authorize ->
                                 authorize
-                                        // .antMatchers("/withdraw")
-                                        // .permitAll()
+                                        .antMatchers("/withdraw")
+                                        .permitAll()
                                         // .hasAnyRole("ADMIN", "ACCOUNTANT")
                                         .anyRequest()
                                         .authenticated());
-        // http.formLogin().and().logout();
+        http.formLogin().and().logout();
         // http.rememberMe()
         //         .rememberMeServices(null)
         //         .tokenRepository(new JdbcTokenRepositoryImpl(){{
@@ -93,11 +94,8 @@ public class SecurityConfiguration {
                                         }));
         // .sessionRegistry(sessionRegistry()) // session 共享
         http.csrf(
-                csrf ->
-                        csrf.disable());
-                                // .csrfTokenRepository(
-                                //         CookieCsrfTokenRepository
-                                //                 .withHttpOnlyFalse())); // 将令牌保存到cookie中（并允许前端获取）
+                csrf -> // 将令牌保存到cookie中（并允许前端获取）
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
         // http.authenticationManager(
         //         new ProviderManager(Collections.singletonList(captchaAuthenticationProvider())));
         // http.authenticationProvider(); // 加入到当前 CustomAuthenticationManager 中，不推荐，应该在自定义 Filter
@@ -112,12 +110,12 @@ public class SecurityConfiguration {
      */
     @Bean
     public AbstractAuthenticationProcessingFilter loginFilter() {
+        // final LoginFilter loginFilter = new LoginFilter(); // 配置无关
+        // loginFilter.setUsernameParameter("uname"); // 配置无关
+        // loginFilter.setPasswordParameter("passwd"); // 配置无关
         final CaptchaAuthenticationFilter loginFilter =
                 new CaptchaAuthenticationFilter(); // 配置 authenticationManager
-        // final LoginFilter loginFilter = new LoginFilter();
-        // loginFilter.setFilterProcessesUrl("/doLogin");
-        // loginFilter.setUsernameParameter("uname");
-        // loginFilter.setPasswordParameter("passwd");
+        // loginFilter.setFilterProcessesUrl("/doLogin"); // 这里设置会进行顶替
         // loginFilter.setRememberMeServices(
         //         rememberMeServices()); // 前后端分离后，更改了获取方式后，存放也需要同步设置(2/2)
         // 指定认证管理器
@@ -161,7 +159,7 @@ public class SecurityConfiguration {
     }
 
     /**
-     * 自行实现根据手机号查询可用的用户，这里简单举例. 注意该接口可能出现多态。所以最好加上注解 @Qualifier
+     * 默认提供一个用户, 供登陆成功后展示. 注意该接口可能出现多态。所以最好加上注解 @Qualifier
      *
      * @return the user details service
      */
@@ -183,6 +181,7 @@ public class SecurityConfiguration {
      */
     @Bean
     CaptchaAuthenticationProvider captchaAuthenticationProvider() {
+        // 一个 Provider 需要配置一个 userDetailsService. 验证 service 这里使用到就放入
         return new CaptchaAuthenticationProvider(captchaUserDetailsService(), captchaService);
     }
 }

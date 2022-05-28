@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * LoginFilter
+ * 以 json 的方式进行登陆
  *
  * @author zy
  * @version 2022/5/10

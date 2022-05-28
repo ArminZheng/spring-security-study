@@ -6,7 +6,11 @@ import org.springframework.security.core.SpringSecurityCoreVersion;
 
 import java.util.Collection;
 
-/** 验证码认证凭据. */
+/**
+ * 验证码认证凭据, 深度还原 UsernamePasswordAuthenticationToken
+ *
+ * @author armin
+ */
 public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
@@ -44,7 +48,7 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
         super.setAuthenticated(true); // must use super, as we override
     }
 
-    public Object getCredentials() {
+    public Object getCredentials() { // captcha is credentials
         return this.captcha;
     }
 
@@ -57,7 +61,6 @@ public class CaptchaAuthenticationToken extends AbstractAuthenticationToken {
             throw new IllegalArgumentException(
                     "Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
         }
-
         super.setAuthenticated(false);
     }
 

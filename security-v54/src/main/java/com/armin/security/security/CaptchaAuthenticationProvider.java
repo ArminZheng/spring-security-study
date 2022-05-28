@@ -22,10 +22,13 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * 验证码认证器.
+ * 验证码认证器 Provider.
+ *
+ * @author armin
  */
 @Slf4j
-public class CaptchaAuthenticationProvider implements AuthenticationProvider, InitializingBean, MessageSourceAware {
+public class CaptchaAuthenticationProvider
+        implements AuthenticationProvider, InitializingBean, MessageSourceAware {
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private final UserDetailsService userDetailsService;
     private final CaptchaService captchaService;
@@ -35,21 +38,27 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
      * Instantiates a new Captcha authentication provider.
      *
      * @param userDetailsService the user details service
-     * @param captchaService     the captcha service
+     * @param captchaService the captcha service
      */
-    public CaptchaAuthenticationProvider(UserDetailsService userDetailsService, CaptchaService captchaService) {
+    public CaptchaAuthenticationProvider(
+            UserDetailsService userDetailsService, CaptchaService captchaService) {
         this.userDetailsService = userDetailsService;
         this.captchaService = captchaService;
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        Assert.isInstanceOf(CaptchaAuthenticationToken.class, authentication,
-                () -> messages.getMessage(
-                        "CaptchaAuthenticationProvider.onlySupports",
-                        "Only CaptchaAuthenticationToken is supported"));
+    public Authentication authenticate(Authentication authentication)
+            throws AuthenticationException {
+        Assert.isInstanceOf(
+                CaptchaAuthenticationToken.class,
+                authentication,
+                () ->
+                        messages.getMessage(
+                                "CaptchaAuthenticationProvider.onlySupports",
+                                "Only CaptchaAuthenticationToken is supported"));
 
-        CaptchaAuthenticationToken unAuthenticationToken = (CaptchaAuthenticationToken) authentication;
+        CaptchaAuthenticationToken unAuthenticationToken =
+                (CaptchaAuthenticationToken) authentication;
 
         String phone = unAuthenticationToken.getName();
         String rawCode = (String) unAuthenticationToken.getCredentials();
@@ -60,14 +69,12 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         if (Objects.isNull(userDetails)) {
             throw new BadCredentialsException("Bad credentials");
         }
-
         // 验证码校验
         if (captchaService.verifyCaptcha(phone, rawCode)) {
             return createSuccessAuthentication(authentication, userDetails);
         } else {
             throw new BadCredentialsException("captcha is not matched");
         }
-
     }
 
     @Override
@@ -75,8 +82,9 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
         return CaptchaAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
+    /** 自定义的 Provider 对 service 进行校验 */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Assert.notNull(userDetailsService, "userDetailsService must not be null");
         Assert.notNull(captchaService, "captchaService must not be null");
     }
@@ -87,20 +95,21 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider, In
     }
 
     /**
-     * 认证成功将非授信凭据转为授信凭据.
-     * 封装用户信息 角色信息。
+     * 认证成功将非授信凭据转为授信凭据. 封装用户信息 角色信息。
      *
      * @param authentication the authentication
-     * @param user           the user
+     * @param user the user
      * @return the authentication
      */
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserDetails user) {
+    protected Authentication createSuccessAuthentication(
+            Authentication authentication, UserDetails user) {
+        Collection<? extends GrantedAuthority> authorities =
+                authoritiesMapper.mapAuthorities(user.getAuthorities());
+        // authenticationToken.setDetails(authentication.getDetails());
+        // ProviderManager 包含了这一步，所以可以去掉
+        // if (result != null) {
+        //     copyDetails(authentication, result);
 
-        Collection<? extends GrantedAuthority> authorities = authoritiesMapper.mapAuthorities(user.getAuthorities());
-        CaptchaAuthenticationToken authenticationToken = new CaptchaAuthenticationToken(user, null, authorities);
-        authenticationToken.setDetails(authentication.getDetails());
-
-        return authenticationToken;
+        return new CaptchaAuthenticationToken(user, null, authorities);
     }
-
 }

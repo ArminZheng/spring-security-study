@@ -1,8 +1,8 @@
 package com.armin.security.controller;
 
 import com.armin.security.service.AService;
+import lombok.Data;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,13 +20,14 @@ import java.util.concurrent.TimeUnit;
  * @author zy
  * @version 2022/5/6
  */
+@Data
 @RestController
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class InfoController {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(InfoController.class);
 
-    @Autowired AService service;
+    private final AService service;
 
     @Resource(name = "redisTemplate")
     ValueOperations<String, String> valueOps;

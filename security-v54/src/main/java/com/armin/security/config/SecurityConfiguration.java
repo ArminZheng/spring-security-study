@@ -6,6 +6,8 @@ import com.armin.security.service.CaptchaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.RegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
@@ -100,6 +106,9 @@ public class SecurityConfiguration {
         //         new ProviderManager(Collections.singletonList(captchaAuthenticationProvider())));
         // http.authenticationProvider(); // 加入到当前 CustomAuthenticationManager 中，不推荐，应该在自定义 Filter
         // 中设置
+
+        // cors security 解决方案
+        http.cors().configurationSource(corsConfigurationSource());
         return http.build();
     }
 
@@ -183,5 +192,36 @@ public class SecurityConfiguration {
     CaptchaAuthenticationProvider captchaAuthenticationProvider() {
         // 一个 Provider 需要配置一个 userDetailsService. 验证 service 这里使用到就放入
         return new CaptchaAuthenticationProvider(captchaUserDetailsService(), captchaService);
+    }
+
+    /**
+     * 原有方式：得考虑优先级问题
+     *
+     * @return Registration Bean
+     */
+    @Bean
+    RegistrationBean corsFilter() {
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        registrationBean.setFilter(new CorsFilter(source));
+        registrationBean.setOrder(-1);
+        return registrationBean;
+    }
+
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

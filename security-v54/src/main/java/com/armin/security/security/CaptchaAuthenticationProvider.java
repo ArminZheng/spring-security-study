@@ -29,6 +29,7 @@ import java.util.Objects;
 @Slf4j
 public class CaptchaAuthenticationProvider
         implements AuthenticationProvider, InitializingBean, MessageSourceAware {
+
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private final UserDetailsService userDetailsService;
     private final CaptchaService captchaService;
